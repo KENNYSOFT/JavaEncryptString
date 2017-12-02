@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +68,13 @@ public class JavaEncryptString
 			// ESCAPE end
 
 			// ENCRYPT start
+			byte[] keyarr = new byte[16];
+			Random random = new Random();
+			for (int i = 0; i < 16; ++i)
+			{
+				keyarr[i] = (byte)random.nextInt(256);
+			}
+			String key = Base64.getEncoder().encodeToString(keyarr);
 			sb = new StringBuilder();
 			StringBuilder sb2 = null;
 			char[] srcarr = src.toCharArray();
@@ -80,7 +88,8 @@ public class JavaEncryptString
 				{
 					if (prev_state == STATE_QUOTE)
 					{
-						sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
+						//sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
+						sb.append("JESDecrypter.decrypt(\"" + JESEncrypter.encrypt(sb2.toString(), key) + "\", \"" + key + "\")");
 					}
 					else
 					{
@@ -111,11 +120,11 @@ public class JavaEncryptString
 			sb = new StringBuilder();
 			if (matcher.find())
 			{
-				matcher.appendReplacement(sb, "$0\nimport java.util.Base64;");
+				matcher.appendReplacement(sb, "$0\nimport java.util.Base64;\nimport is2017.kr.ac.korea.ccs.JESDecrypter;");
 			}
 			else
 			{
-				sb.append("import java.util.Base64;\n");
+				sb.append("import java.util.Base64;\nimport is2017.kr.ac.korea.ccs.JESDecrypter;\n");
 			}
 			matcher.appendTail(sb);
 			src = sb.toString();
@@ -133,9 +142,11 @@ public class JavaEncryptString
 
 			// BATCH start
 			bw = new BufferedWriter(new FileWriter(new File("encrypted/" + className + ".bat")));
-			bw.write("javac " + className + ".java");
+			bw.write("javac -d . JESDecrypter.java");
 			bw.newLine();
-			bw.write("java " + className);
+			bw.write("javac -cp . " + className + ".java");
+			bw.newLine();
+			bw.write("java -cp . " + className);
 			bw.newLine();
 			bw.write("pause");
 			bw.close();
