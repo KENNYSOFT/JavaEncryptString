@@ -1,12 +1,12 @@
 package is2017.kr.ac.korea.ccs;
 
 import java.io.BufferedWriter;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,11 +14,40 @@ import java.util.regex.Pattern;
 public class JavaEncryptString
 {
 	final static int STATE_NORMAL = 0;
-	final static int STATE_BACKSLASH = 1;
+	final static int STATE_QUOTE = 1;
+	final static int STATE_BACKSLASH = 2;
+	final static int[][] STATE_TRANSITION_TABLE = new int[3][65536];
+	final static char[] BACKSLASH_CHARACTER = new char[65536];
+	
+	static
+	{
+		for (int i = 0; i <= 2; ++i)
+		{
+			Arrays.fill(STATE_TRANSITION_TABLE[i], i);
+		}
+		STATE_TRANSITION_TABLE[STATE_NORMAL]['\"'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_QUOTE]['\\'] = STATE_BACKSLASH;
+		STATE_TRANSITION_TABLE[STATE_QUOTE]['\"'] = STATE_NORMAL;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['t'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['b'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['n'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['r'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['f'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['\''] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['\"'] = STATE_QUOTE;
+		STATE_TRANSITION_TABLE[STATE_BACKSLASH]['\\'] = STATE_QUOTE;
+		BACKSLASH_CHARACTER['t'] = '\t';
+		BACKSLASH_CHARACTER['b'] = '\b';
+		BACKSLASH_CHARACTER['n'] = '\n';
+		BACKSLASH_CHARACTER['r'] = '\r';
+		BACKSLASH_CHARACTER['f'] = '\f';
+		BACKSLASH_CHARACTER['\''] = '\'';
+		BACKSLASH_CHARACTER['\"'] = '\"';
+		BACKSLASH_CHARACTER['\\'] = '\\';
+	}
 	
 	public static void main(String[] args)
 	{
-		//\u000ASystem.out.println("\uuuuuuuuuuuuuuu8888");
 		String className = args[0];
 		try
 		{
@@ -35,17 +64,45 @@ public class JavaEncryptString
 			}
 			matcher.appendTail(sb);
 			src = sb.toString();
-			System.out.println(src);
 			// ESCAPE end
 
 			// ENCRYPT start
-			matcher = Pattern.compile("\\\"[^\\\"]*\\\"").matcher(src);
 			sb = new StringBuilder();
-			while (matcher.find())
+			StringBuilder sb2 = null;
+			char[] srcarr = src.toCharArray();
+			int state = STATE_NORMAL;
+			int prev_state;
+			for (int i = 0; i < srcarr.length; ++i)
 			{
-				matcher.appendReplacement(sb, "new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(matcher.group().substring(1, matcher.group().length() - 1).getBytes()) + "\"))");
+				prev_state = state;
+				state = STATE_TRANSITION_TABLE[state][srcarr[i]];
+				if (state == STATE_NORMAL)
+				{
+					if (prev_state == STATE_QUOTE)
+					{
+						sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
+					}
+					else
+					{
+						sb.append(srcarr[i]);
+					}
+				}
+				else if (state == STATE_QUOTE)
+				{
+					if (prev_state == STATE_NORMAL)
+					{
+						sb2 = new StringBuilder();
+					}
+					else if (prev_state == STATE_BACKSLASH)
+					{
+						sb2.append(BACKSLASH_CHARACTER[srcarr[i]]);
+					}
+					else
+					{
+						sb2.append(srcarr[i]);
+					}
+				}
 			}
-			matcher.appendTail(sb);
 			src = sb.toString();
 			// ENCRYPT end
 
