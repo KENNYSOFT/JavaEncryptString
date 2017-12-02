@@ -1,6 +1,7 @@
 package is2017.kr.ac.korea.ccs;
 
 import java.io.BufferedWriter;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -12,18 +13,34 @@ import java.util.regex.Pattern;
 
 public class JavaEncryptString
 {
+	final static int STATE_NORMAL = 0;
+	final static int STATE_BACKSLASH = 1;
+	
 	public static void main(String[] args)
 	{
+		//\u000ASystem.out.println("\uuuuuuuuuuuuuuu8888");
 		String className = args[0];
 		try
 		{
 			// LOAD start
 			String src = String.join("\n", Files.readAllLines(Paths.get(new File(className + ".java").getAbsolutePath())));
 			// LOAD end
+			
+			// ESCAPE start
+			Matcher matcher = Pattern.compile("\\\\u+([0-9A-Fa-f]{4})").matcher(src);
+			StringBuilder sb = new StringBuilder();
+			while (matcher.find())
+			{
+				matcher.appendReplacement(sb, Character.toString((char)Integer.parseInt(matcher.group(1), 16)));
+			}
+			matcher.appendTail(sb);
+			src = sb.toString();
+			System.out.println(src);
+			// ESCAPE end
 
 			// ENCRYPT start
-			Matcher matcher = Pattern.compile("\\\"[^\\\"]*\\\"").matcher(src);
-			StringBuilder sb = new StringBuilder();
+			matcher = Pattern.compile("\\\"[^\\\"]*\\\"").matcher(src);
+			sb = new StringBuilder();
 			while (matcher.find())
 			{
 				matcher.appendReplacement(sb, "new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(matcher.group().substring(1, matcher.group().length() - 1).getBytes()) + "\"))");
