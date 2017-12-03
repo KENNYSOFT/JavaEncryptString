@@ -19,7 +19,7 @@ public class JavaEncryptString
 	final static int STATE_BACKSLASH = 2;
 	final static int[][] STATE_TRANSITION_TABLE = new int[3][65536];
 	final static char[] BACKSLASH_CHARACTER = new char[65536];
-	
+
 	static
 	{
 		for (int i = 0; i <= 2; ++i)
@@ -46,21 +46,20 @@ public class JavaEncryptString
 		BACKSLASH_CHARACTER['\"'] = '\"';
 		BACKSLASH_CHARACTER['\\'] = '\\';
 	}
-	
+
 	public static void main(String[] args)
 	{
+		new File("encrypted").mkdir();
 
 		String encryptionType = args[0];
 		String className = args[1];
-
-		System.out.println(String.format("Type -> %s, Class -> %s", encryptionType, className));
 
 		try
 		{
 			// LOAD start
 			String src = String.join("\n", Files.readAllLines(Paths.get(new File(className + ".java").getAbsolutePath())));
 			// LOAD end
-			
+
 			// ESCAPE start
 			Matcher matcher = Pattern.compile("\\\\u+([0-9A-Fa-f]{4})").matcher(src);
 			StringBuilder sb = new StringBuilder();
