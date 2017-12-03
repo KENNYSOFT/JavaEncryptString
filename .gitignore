@@ -4,3 +4,5 @@ encrypted/
 .settings/
 *.class
 *.iml
+.classpath
+.project
