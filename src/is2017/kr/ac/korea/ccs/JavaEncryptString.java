@@ -49,7 +49,12 @@ public class JavaEncryptString
 	
 	public static void main(String[] args)
 	{
-		String className = args[0];
+
+		String encryptionType = args[0];
+		String className = args[1];
+
+		System.out.println(String.format("Type -> %s, Class -> %s", encryptionType, className));
+
 		try
 		{
 			// LOAD start
@@ -88,8 +93,18 @@ public class JavaEncryptString
 				{
 					if (prev_state == STATE_QUOTE)
 					{
-						//sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
-						sb.append("JESDecrypter.decrypt(\"" + JESEncrypter.encrypt(sb2.toString(), key) + "\", \"" + key + "\")");
+						if (encryptionType.equals("-b"))
+						{
+							sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
+						}
+						else if (encryptionType.equals("-a"))
+						{
+							sb.append("JESDecrypter.decrypt(\"" + JESEncrypter.encrypt(sb2.toString(), key) + "\", \"" + key + "\")");
+						}
+						else
+						{
+							System.out.println("Nope");
+						}
 					}
 					else
 					{
