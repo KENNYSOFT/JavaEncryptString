@@ -96,8 +96,16 @@ public class JavaEncryptString
 						{
 							sb.append("new String(Base64.getDecoder().decode(\"" + Base64.getEncoder().encodeToString(sb2.toString().getBytes()) + "\"))");
 						}
-						else if (encryptionType.equals("-a"))
+						else if (encryptionType.startsWith("-a"))
 						{
+							if (encryptionType.equals("-ap"))
+							{
+								for (int j = 0; j < 16; ++j)
+								{
+									keyarr[j] = (byte)random.nextInt(256);
+								}
+								key = Base64.getEncoder().encodeToString(keyarr);
+							}
 							sb.append("JESDecrypter.decrypt(\"" + JESEncrypter.encrypt(sb2.toString(), key) + "\", \"" + key + "\")");
 						}
 						else

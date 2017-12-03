@@ -28,6 +28,7 @@ class MyFrame implements ActionListener
 	private JButton doBtn = new JButton();
 	private JRadioButton b64Radio = new JRadioButton();
 	private JRadioButton aesRadio = new JRadioButton();
+	private JRadioButton aespRadio = new JRadioButton();
 	private ButtonGroup radioGroup = new ButtonGroup();
 	private JLabel fileLabel = new JLabel();
 	private JLabel cryptLabel = new JLabel();
@@ -52,8 +53,10 @@ class MyFrame implements ActionListener
 		saveBtn.setText("변경 후 저장");
 		b64Radio.setText("base64");
 		aesRadio.setText("AES");
+		aespRadio.setText("AES+");
 		radioGroup.add(b64Radio);
 		radioGroup.add(aesRadio);
+		radioGroup.add(aespRadio);
 
 		//액션 리스너 장착
 		openBtn.addActionListener(this);
@@ -68,6 +71,7 @@ class MyFrame implements ActionListener
 		westPanel.add(cryptLabel);
 		westPanel.add(b64Radio);
 		westPanel.add(aesRadio);
+		westPanel.add(aespRadio);
 
 		eastPanel.add(doBtn);
 
@@ -113,6 +117,10 @@ class MyFrame implements ActionListener
 					}
 					else if(whatRadio.equals("AES")){
 						JavaEncryptString.main(new String[]{"-a", choosedFile.getName().replace(".java", "")});
+						break;
+					}
+					else if(whatRadio.equals("AES+")){
+						JavaEncryptString.main(new String[]{"-ap", choosedFile.getName().replace(".java", "")});
 						break;
 					}
 				}
